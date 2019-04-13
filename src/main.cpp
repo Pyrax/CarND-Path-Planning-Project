@@ -7,6 +7,12 @@
 #include "Eigen-3.3/Eigen/QR"
 #include "helpers.h"
 #include "json.hpp"
+#include "config.h"
+#include "BehaviorPlanner.h"
+#include "Coords.h"
+#include "MotionPlanner.h"
+#include "TrajectoryGenerator.h"
+#include "Vehicle.h"
 
 // for convenience
 using nlohmann::json;
@@ -50,7 +56,18 @@ int main() {
     map_waypoints_dy.push_back(d_y);
   }
 
-  h.onMessage([&map_waypoints_x, &map_waypoints_y, &map_waypoints_s,
+  // Initialize ego car
+  Vehicle ego_car{};
+
+  Map map{map_waypoints_x,
+          map_waypoints_y,
+          map_waypoints_s,
+          map_waypoints_dx,
+          map_waypoints_dy};
+  MotionPlanner motion{map};
+
+  h.onMessage([&ego_car, motion,
+                  &map_waypoints_x, &map_waypoints_y, &map_waypoints_s,
                   &map_waypoints_dx, &map_waypoints_dy]
                   (uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,
                    uWS::OpCode opCode) {
@@ -90,52 +107,64 @@ int main() {
 
           json msgJson;
 
-          vector<double> next_x_vals;
-          vector<double> next_y_vals;
+          // Update ego vehicle and vehicles in other lanes
+          ego_car.set_position(car_s, car_d);
+          ego_car.set_velocity(car_speed);
 
-          // TODO: Prediction
+          auto number_lane_cars = sensor_fusion.size();
+          vector<Vehicle> lane_cars{number_lane_cars};
+          for (int i = 0; i < number_lane_cars; ++i) {
+            // double other_car_id = sensor_fusion[i][0];
+            // double other_car_x = sensor_fusion[i][1];
+            // double other_car_y = sensor_fusion[i][2];
+            double other_car_vx = sensor_fusion[i][3];
+            double other_car_vy = sensor_fusion[i][4];
+            double other_car_s = sensor_fusion[i][5];
+            double other_car_d = sensor_fusion[i][6];
 
-          // TODO: Behaviour planning
+            double vel = sqrt(other_car_vx * other_car_vx + other_car_vy * other_car_vy);
 
-          // TODO: Implement realistic trajectory generation
-          double pos_x;
-          double pos_y;
-          double angle;
-          int path_size = previous_path_x.size();
-
-          for (int i = 0; i < path_size; ++i) {
-            next_x_vals.push_back(previous_path_x[i]);
-            next_y_vals.push_back(previous_path_y[i]);
+            lane_cars[i] = Vehicle{other_car_s, other_car_d, vel};
           }
 
-          if (path_size == 0) {
-            pos_x = car_x;
-            pos_y = car_y;
-            angle = deg2rad(car_yaw);
-          } else {
-            pos_x = previous_path_x[path_size - 1];
-            pos_y = previous_path_y[path_size - 1];
+          int points_left = previous_path_x.size();
+          // Recover previous path coords
+          Coords old_coords{previous_path_x, previous_path_y};
+          // New path coords will be placed in here to send it to the program:
+          Coords new_coords = old_coords;
 
-            double pos_x2 = previous_path_x[path_size - 2];
-            double pos_y2 = previous_path_y[path_size - 2];
+          BehaviorState new_state = STATE_KEEP_SPEED;
 
-            angle = atan2(pos_y - pos_y2, pos_x - pos_x2);
+          if (points_left < MIN_POINTS) {
+            VehicleState init_s{car_s, car_speed, 0.0};
+            VehicleState init_d{car_d, 0.0, 0.0};
+
+            ego_car.set_state_s(init_s);
+            ego_car.set_state_d(init_d);
+
+            new_state = STATE_START;
           }
 
-          double dist_inc = 0.5;
-          for (int i = 0; i < 50 - path_size; ++i) {
-            double dist_inc_x = dist_inc * cos(angle + (i + 1) * (pi() / 100.0));
-            double dist_inc_y = dist_inc * sin(angle + (i + 1) * (pi() / 100.0));
+          // Update state using the behavior planner to get new state
+          /*BehaviorPlanner planner{ego_car, lane_cars};
+          BehaviorState new_state = planner.get_next_state();*/
 
-            pos_x += dist_inc_x;
-            pos_y += dist_inc_y;
+          TrajectoryGenerator generator{ego_car, new_state};
+          Trajectory traj = generator.get_trajectory();
+          // TODO: don't use target as current state
+          ego_car.set_state_s(traj.target_s);
+          ego_car.set_state_d(traj.target_d);
 
-            next_x_vals.push_back(pos_x);
-            next_y_vals.push_back(pos_y);
-          }
+          Coords coords = motion.generate_path(
+              generator.get_jmt_s(),
+              generator.get_jmt_d(),
+              TICK_RATE,
+              NUMBER_POINTS,
+              points_left);
+          new_coords = Coords{old_coords, coords};
 
-          msgJson["next_x"] = next_x_vals;
-          msgJson["next_y"] = next_y_vals;
+          msgJson["next_x"] = new_coords.get_x();
+          msgJson["next_y"] = new_coords.get_y();
 
           auto msg = "42[\"control\"," + msgJson.dump() + "]";
 
