@@ -49,7 +49,6 @@ class TrajectoryGenerator {
   JMT jmt_s, jmt_d;
 
   Trajectory constant_speed_trajectory(Vehicle veh) const {
-    // double target_s_pos = Vehicle::position_at(veh.get_state_s(), TICK_RATE);
     double target_s_pos = veh.get_state_s().pos + PLANNING_PERIOD * veh.get_state_s().vel;
     double veh_vel = veh.get_state_s().vel;
 

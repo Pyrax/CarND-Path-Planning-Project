@@ -44,13 +44,6 @@ class Vehicle {
     return this->lane;
   }
 
-  static double position_at(VehicleState current_state, double time) {
-    double s = current_state.pos;
-    double v = current_state.vel;
-    double a = current_state.acc;
-    return s + v * time + 0.5 * a * time * time;
-  }
-
   static int d_to_lane(double d) {
     for (int i = 0; i < LANES; ++i) {
       double left_end = std::max(LANE_CENTERS[i]  - .5 * LANE_WIDTH, MIN_LANE);

@@ -1,4 +1,5 @@
 #include <uWS/uWS.h>
+#include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -18,6 +19,7 @@
 using nlohmann::json;
 using std::string;
 using std::vector;
+using std::min;
 
 int main() {
   uWS::Hub h;
@@ -66,7 +68,10 @@ int main() {
           map_waypoints_dy};
   MotionPlanner motion{map};
 
-  h.onMessage([&ego_car, motion,
+  FrenetPath prev_path_frenet{};
+  bool initialize = true;
+
+  h.onMessage([&ego_car, &motion, &prev_path_frenet, &initialize,
                   &map_waypoints_x, &map_waypoints_y, &map_waypoints_s,
                   &map_waypoints_dx, &map_waypoints_dy]
                   (uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,
@@ -107,6 +112,8 @@ int main() {
 
           json msgJson;
 
+          Coords prev_path_xy{previous_path_x, previous_path_y};
+
           // Update ego vehicle and vehicles in other lanes
           ego_car.set_position(car_s, car_d);
           ego_car.set_velocity(car_speed);
@@ -127,15 +134,13 @@ int main() {
             lane_cars[i] = Vehicle{other_car_s, other_car_d, vel};
           }
 
-          int points_left = previous_path_x.size();
-          // Recover previous path coords
-          Coords old_coords{previous_path_x, previous_path_y};
-          // New path coords will be placed in here to send it to the program:
-          Coords new_coords = old_coords;
+          int prev_points = previous_path_x.size();
+          int prev_reuse = min(REUSE_POINTS, prev_points); // how many points to reuse from last generated trajectory
+          prev_reuse = 0; // TODO: fix reusing old points without jumping
 
-          BehaviorState new_state = STATE_KEEP_SPEED;
+          BehaviorState new_state = STATE_START;
 
-          if (points_left < MIN_POINTS) {
+          if (initialize) {
             VehicleState init_s{car_s, car_speed, 0.0};
             VehicleState init_d{car_d, 0.0, 0.0};
 
@@ -143,6 +148,13 @@ int main() {
             ego_car.set_state_d(init_d);
 
             new_state = STATE_START;
+            initialize = false;
+          } else {
+            // int last_point = prev_reuse + 1;
+            // int last_point = prev_reuse;
+            int last_point = NUM_POINTS - prev_points + prev_reuse - 1;
+            ego_car.set_state_s(prev_path_frenet.s[last_point]);
+            ego_car.set_state_d(prev_path_frenet.d[last_point]);
           }
 
           // Update state using the behavior planner to get new state
@@ -151,20 +163,18 @@ int main() {
 
           TrajectoryGenerator generator{ego_car, new_state};
           Trajectory traj = generator.get_trajectory();
-          // TODO: don't use target as current state
-          ego_car.set_state_s(traj.target_s);
-          ego_car.set_state_d(traj.target_d);
 
-          Coords coords = motion.generate_path(
+          Path p = motion.generate_path(
               generator.get_jmt_s(),
               generator.get_jmt_d(),
-              TICK_RATE,
-              NUMBER_POINTS,
-              points_left);
-          new_coords = Coords{old_coords, coords};
+              prev_path_frenet,
+              prev_path_xy,
+              prev_reuse);
 
-          msgJson["next_x"] = new_coords.get_x();
-          msgJson["next_y"] = new_coords.get_y();
+          prev_path_frenet = p.frenet_coords;
+
+          msgJson["next_x"] = p.xy_coords.get_x();
+          msgJson["next_y"] = p.xy_coords.get_y();
 
           auto msg = "42[\"control\"," + msgJson.dump() + "]";
 

@@ -54,15 +54,27 @@ class JMT {
   }
 
   double solve(const double T) const {
-    const double T2 = T * T;
-    const double T3 = T * T2;
-    const double T4 = T * T3;
-    const double T5 = T * T4;
+    double val = 0.0;
+    for (int i = 0; i < this->coefficients.size(); ++i) {
+      val += this->coefficients[i] * pow(T, i);
+    }
+    return val;
+  }
 
-    Eigen::VectorXd T_var = Eigen::VectorXd(6);
-    T_var << 1.0, T, T2, T3, T4, T5;
+  double solve_dot(const double T) const {
+    double val = 0.0;
+    for (int i = 1; i < this->coefficients.size(); ++i) {
+      val += i * this->coefficients[i] * pow(T, i - 1);
+    }
+    return val;
+  }
 
-    return T_var.transpose() * this->coefficients;
+  double solve_ddot(const double T) const {
+    double val = 0.0;
+    for (int i = 2; i < this->coefficients.size(); ++i) {
+      val += (i - 1) * i *this->coefficients[i] * pow(T, i - 2);
+    }
+    return val;
   }
 
  private:

@@ -1,6 +1,7 @@
 #ifndef PATH_PLANNING_CONFIG_H
 #define PATH_PLANNING_CONFIG_H
 
+#include "Coords.h"
 const int LANES = 3;
 const double LANE_CENTERS[] {2.0, 6.0, 10.0};
 const double LANE_WIDTH = 4.0;
@@ -10,13 +11,14 @@ const double MAX_LANE = 12.0;
 const double TRACK_SIZE = 6945.554;
 
 const double TICK_RATE = 0.02;
-const double PLANNING_PERIOD = 1.0;
-const int NUMBER_POINTS = static_cast<int>(PLANNING_PERIOD/TICK_RATE);
+const double PLANNING_PERIOD = 2.0;
 
-const int MIN_POINTS = 2;
+const int NUM_POINTS = 100;
+const int REUSE_POINTS = 10;
 
-const double CONV = 0.224;
-const double MAX_SPEED = 20.0;
+const double MAX_SPEED = 21.0;
+const double MAX_ACC = 10.0;
+const double MAX_JERK = 10.0;
 const double INIT_S = 40.0;
 
 enum BehaviorState {
@@ -40,12 +42,22 @@ struct Trajectory {
   VehicleState target_d;
 };
 
+struct FrenetPath {
+  std::vector<VehicleState> s;
+  std::vector<VehicleState> d;
+};
+
 struct Map {
   std::vector<double> x;
   std::vector<double> y;
   std::vector<double> s;
   std::vector<double> dx;
   std::vector<double> dy;
+};
+
+struct Path {
+  Coords xy_coords;
+  FrenetPath frenet_coords;
 };
 
 #endif //PATH_PLANNING_CONFIG_H
