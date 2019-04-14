@@ -34,7 +34,7 @@ class MotionPlanner {
       path_d.push_back(prev_path_frenet.d[i]);
     }
 
-    for (int i = prev_reuse; i < NUM_POINTS; ++i) {
+    for (int i = 0; i < NUM_POINTS - prev_reuse; ++i) {
       const double s      = jmt_s.solve(i * TICK_RATE);
       const double s_dot  = jmt_s.solve_dot(i * TICK_RATE);
       const double s_ddot = jmt_s.solve_ddot(i * TICK_RATE);

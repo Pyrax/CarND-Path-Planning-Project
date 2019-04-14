@@ -13,12 +13,14 @@ const double TRACK_SIZE = 6945.554;
 const double TICK_RATE = 0.02;
 const double PLANNING_PERIOD = 2.0;
 
-const int NUM_POINTS = 100;
-const int REUSE_POINTS = 10;
+const int NUM_POINTS = 50;
+const int REUSE_POINTS = 20;
 
 const double MAX_SPEED = 21.0;
-const double MAX_ACC = 10.0;
+const double MAX_ACCEL = 10.0;
+const double MAX_ACCEL_LIMIT = MAX_ACCEL * TICK_RATE;
 const double MAX_JERK = 10.0;
+
 const double INIT_S = 40.0;
 
 enum BehaviorState {

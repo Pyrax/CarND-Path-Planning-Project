@@ -134,9 +134,8 @@ int main() {
             lane_cars[i] = Vehicle{other_car_s, other_car_d, vel};
           }
 
-          int prev_points = previous_path_x.size();
-          int prev_reuse = min(REUSE_POINTS, prev_points); // how many points to reuse from last generated trajectory
-          prev_reuse = 0; // TODO: fix reusing old points without jumping
+          int prev_size = previous_path_x.size();
+          int prev_reuse = min(REUSE_POINTS, prev_size); // how many points to reuse from last generated trajectory
 
           BehaviorState new_state = STATE_START;
 
@@ -150,11 +149,10 @@ int main() {
             new_state = STATE_START;
             initialize = false;
           } else {
-            // int last_point = prev_reuse + 1;
-            // int last_point = prev_reuse;
-            int last_point = NUM_POINTS - prev_points + prev_reuse - 1;
-            ego_car.set_state_s(prev_path_frenet.s[last_point]);
-            ego_car.set_state_d(prev_path_frenet.d[last_point]);
+            // int cur = NUM_POINTS - prev_size + prev_reuse - 1;
+            int cur = NUM_POINTS - prev_size + prev_reuse;
+            ego_car.set_state_s(prev_path_frenet.s[cur]);
+            ego_car.set_state_d(prev_path_frenet.d[cur]);
           }
 
           // Update state using the behavior planner to get new state
