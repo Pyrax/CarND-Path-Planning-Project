@@ -38,17 +38,8 @@ class TrajectoryGenerator {
     return this->trajectory;
   }
 
-  JMT get_jmt_s() const {
-    return this->jmt_s;
-  }
-
-  JMT get_jmt_d() const {
-    return this->jmt_d;
-  }
-
  private:
   Trajectory trajectory{};
-  JMT jmt_s, jmt_d;
 
   TrajectoryState constant_speed_trajectory(Vehicle veh) const {
     double target_s_pos = veh.get_state_s().pos + PLANNING_PERIOD * veh.get_state_s().vel;
