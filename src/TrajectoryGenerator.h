@@ -8,14 +8,15 @@
 class TrajectoryGenerator {
  public:
   TrajectoryGenerator(Vehicle veh, BehaviorState state) {
-    Trajectory trajectory{};
+    TrajectoryState target_state{};
+    TrajectoryJMT jmt{};
 
     switch(state) {
       case STATE_KEEP_SPEED:
-        trajectory = this->constant_speed_trajectory(veh);
+        target_state = this->constant_speed_trajectory(veh);
         break;
       case STATE_KEEP_LANE:
-        trajectory = this->keep_lane_trajectory(veh);
+        target_state = this->keep_lane_trajectory(veh);
         break;
       case STATE_CHANGE_LANE_LEFT:
       case STATE_CHANGE_LANE_RIGHT:
@@ -25,12 +26,12 @@ class TrajectoryGenerator {
         break;
       case STATE_START:
       default:
-        trajectory = this->start_trajectory(veh);
+        target_state = this->start_trajectory(veh);
     }
 
-    this->trajectory = trajectory;
-    this->jmt_s = JMT{veh.get_state_s(), trajectory.target_s, PLANNING_PERIOD};
-    this->jmt_d = JMT{veh.get_state_d(), trajectory.target_d, PLANNING_PERIOD};
+    jmt.s = JMT{veh.get_state_s(), target_state.s, PLANNING_PERIOD};
+    jmt.d = JMT{veh.get_state_d(), target_state.d, PLANNING_PERIOD};
+    this->trajectory = { target_state, jmt };
   }
 
   Trajectory get_trajectory() const {
@@ -49,7 +50,7 @@ class TrajectoryGenerator {
   Trajectory trajectory{};
   JMT jmt_s, jmt_d;
 
-  Trajectory constant_speed_trajectory(Vehicle veh) const {
+  TrajectoryState constant_speed_trajectory(Vehicle veh) const {
     double target_s_pos = veh.get_state_s().pos + PLANNING_PERIOD * veh.get_state_s().vel;
     double veh_vel = veh.get_state_s().vel;
 
@@ -61,7 +62,7 @@ class TrajectoryGenerator {
     };
   }
 
-  Trajectory keep_lane_trajectory(Vehicle veh) const {
+  TrajectoryState keep_lane_trajectory(Vehicle veh) const {
     double target_s_pos = veh.get_state_s().pos + PLANNING_PERIOD * veh.get_state_s().vel;
     double veh_vel = veh.get_state_s().vel;
 
@@ -73,8 +74,8 @@ class TrajectoryGenerator {
     };
   }
 
-  Trajectory start_trajectory(Vehicle veh) const {
-    double target_s_pos = veh.get_state_s().pos + 60.0;
+  TrajectoryState start_trajectory(Vehicle veh) const {
+    double target_s_pos = veh.get_state_s().pos + 40.0;
     double target_speed = MAX_SPEED;
 
     double target_d = Vehicle::lane_to_d(veh.get_lane()); // stay in current lane

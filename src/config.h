@@ -2,6 +2,8 @@
 #define PATH_PLANNING_CONFIG_H
 
 #include "Coords.h"
+#include "JMT.h"
+
 const int LANES = 3;
 const double LANE_CENTERS[] {2.0, 6.0, 10.0};
 const double LANE_WIDTH = 4.0;
@@ -39,9 +41,19 @@ struct VehicleState {
   double acc;
 };
 
+struct TrajectoryState {
+  VehicleState s;
+  VehicleState d;
+};
+
+struct TrajectoryJMT {
+  JMT s;
+  JMT d;
+};
+
 struct Trajectory {
-  VehicleState target_s;
-  VehicleState target_d;
+  TrajectoryState target;
+  TrajectoryJMT jmt;
 };
 
 struct FrenetPath {
