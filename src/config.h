@@ -16,14 +16,21 @@ const double TICK_RATE = 0.02;
 const double PLANNING_PERIOD = 2.0;
 
 const int NUM_POINTS = 50;
-const int REUSE_POINTS = 20;
+const int REUSE_POINTS = 10;
 
-const double MAX_SPEED = 21.0;
+const double MAX_SPEED = 22.0;
 const double MAX_ACCEL = 10.0;
-const double MAX_ACCEL_LIMIT = MAX_ACCEL * TICK_RATE;
+const double MAX_SPEED_INC = MAX_ACCEL * TICK_RATE;
 const double MAX_JERK = 10.0;
 
-const double INIT_S = 40.0;
+const double MS_TO_MPH = 2.24; // factor to convert from meters per second to miles per hour
+
+const double VEL_TOLERANCE = 0.1; // small tolerance to substract from other vehicles velocity
+
+const double MIN_FRONT_GAP = 30.0; // important for keeping a minimum distance when generating trajectories
+const double MIN_BACK_GAP = 10.0; // needs to be considered if vehicle behind is too fast and about to crash us
+const double MAX_FRONT_GAP = 60.0; // vehicles which are further away are not considered to be in front
+const double MAX_BACK_GAP = 20.0; // vehicles which are further away are not considered to be behind
 
 enum BehaviorState {
   STATE_START,

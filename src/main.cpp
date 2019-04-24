@@ -114,13 +114,13 @@ int main() {
 
           Coords prev_path_xy{previous_path_x, previous_path_y};
 
-          // Update ego vehicle and vehicles in other lanes
+          // Update ego vehicle and other vehicles
           ego_car.set_position(car_s, car_d);
-          ego_car.set_velocity(car_speed);
+          ego_car.set_velocity(car_speed / MS_TO_MPH);
 
-          auto number_lane_cars = sensor_fusion.size();
-          vector<Vehicle> lane_cars{number_lane_cars};
-          for (int i = 0; i < number_lane_cars; ++i) {
+          auto number_cars = sensor_fusion.size();
+          vector<Vehicle> cars{number_cars};
+          for (int i = 0; i < number_cars; ++i) {
             // double other_car_id = sensor_fusion[i][0];
             // double other_car_x = sensor_fusion[i][1];
             // double other_car_y = sensor_fusion[i][2];
@@ -131,13 +131,11 @@ int main() {
 
             double vel = sqrt(other_car_vx * other_car_vx + other_car_vy * other_car_vy);
 
-            lane_cars[i] = Vehicle{other_car_s, other_car_d, vel};
+            cars[i] = Vehicle{other_car_s, other_car_d, vel};
           }
 
           int prev_size = previous_path_x.size();
           int prev_reuse = min(REUSE_POINTS, prev_size); // how many points to reuse from last generated trajectory
-
-          BehaviorState new_state = STATE_START;
 
           if (initialize) {
             VehicleState init_s{car_s, car_speed, 0.0};
@@ -146,7 +144,7 @@ int main() {
             ego_car.set_state_s(init_s);
             ego_car.set_state_d(init_d);
 
-            new_state = STATE_START;
+            ego_car.set_behavior(STATE_START);
             initialize = false;
           } else {
             // int cur = NUM_POINTS - prev_size + prev_reuse - 1;
@@ -155,16 +153,17 @@ int main() {
             ego_car.set_state_d(prev_path_frenet.d[cur]);
           }
 
-          // Update state using the behavior planner to get new state
-          /*BehaviorPlanner planner{ego_car, lane_cars};
-          BehaviorState new_state = planner.get_next_state();*/
+          // Get best possible trajectory through our behavior planner
+          BehaviorPlanner planner{ego_car, cars};
+          Trajectory traj = planner.get_best_trajectory();
+          ego_car.set_behavior(planner.get_next_state());
 
-          TrajectoryGenerator generator{ego_car, new_state};
-          Trajectory traj = generator.get_trajectory();
+          /*TrajectoryGenerator generator{ego_car};
+          Trajectory traj = generator.get_trajectory();*/
 
           Path p = motion.generate_path(
-              generator.get_jmt_s(),
-              generator.get_jmt_d(),
+              traj.jmt.s,
+              traj.jmt.d,
               prev_path_frenet,
               prev_path_xy,
               prev_reuse);
