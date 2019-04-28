@@ -21,9 +21,6 @@ class TrajectoryGenerator {
       case STATE_CHANGE_LANE_RIGHT:
         target_state = this->lane_change_trajectory(ego, others, direction);
         break;
-      case STATE_PREPARE_CHANGE_LANE_LEFT:
-      case STATE_PREPARE_CHANGE_LANE_RIGHT:
-        break;
       case STATE_KEEP_SPEED:
       default:
         target_state = this->constant_speed_trajectory(ego);
