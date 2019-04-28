@@ -144,7 +144,6 @@ int main() {
             ego_car.set_state_s(init_s);
             ego_car.set_state_d(init_d);
 
-            ego_car.set_behavior(STATE_START);
             initialize = false;
           } else {
             // int cur = NUM_POINTS - prev_size + prev_reuse - 1;

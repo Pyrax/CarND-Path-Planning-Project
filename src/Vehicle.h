@@ -122,7 +122,7 @@ class Vehicle {
 
  private:
   VehicleState state_s{}, state_d{};
-  BehaviorState behavior = STATE_START;
+  BehaviorState behavior = STATE_KEEP_LANE;
   double s = 0.0, d = 0.0, v = 0.0;
   int lane = 0;
 };

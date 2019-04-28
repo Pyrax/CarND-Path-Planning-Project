@@ -12,9 +12,6 @@ class TrajectoryGenerator {
     TrajectoryJMT jmt{};
 
     switch(state) {
-      case STATE_KEEP_SPEED:
-        target_state = this->constant_speed_trajectory(ego);
-        break;
       case STATE_KEEP_LANE:
         target_state = this->keep_lane_trajectory(ego, others);
         break;
@@ -24,9 +21,9 @@ class TrajectoryGenerator {
       case STATE_PREPARE_CHANGE_LANE_LEFT:
       case STATE_PREPARE_CHANGE_LANE_RIGHT:
         break;
-      case STATE_START:
+      case STATE_KEEP_SPEED:
       default:
-        target_state = this->start_trajectory(ego);
+        target_state = this->constant_speed_trajectory(ego);
     }
 
     jmt.s = JMT{ego.get_state_s(), target_state.s, PLANNING_PERIOD};
@@ -94,18 +91,6 @@ class TrajectoryGenerator {
     return {
         VehicleState{target_dist, target_vel, 0.0},
         VehicleState{current_d, 0.0, 0.0}
-    };
-  }
-
-  TrajectoryState start_trajectory(Vehicle veh) const {
-    double target_s_pos = veh.get_state_s().pos + 40.0;
-    double target_speed = MAX_SPEED;
-
-    double target_d = Vehicle::lane_to_d(veh.get_lane()); // stay in current lane
-
-    return {
-      VehicleState{target_s_pos, target_speed, 0.0},
-      VehicleState{target_d, 0.0, 0.0}
     };
   }
 };

@@ -33,7 +33,6 @@ const double MAX_FRONT_GAP = 60.0; // vehicles which are further away are not co
 const double MAX_BACK_GAP = 20.0; // vehicles which are further away are not considered to be behind
 
 enum BehaviorState {
-  STATE_START,
   STATE_KEEP_SPEED,
   STATE_KEEP_LANE,
   STATE_CHANGE_LANE_LEFT,
