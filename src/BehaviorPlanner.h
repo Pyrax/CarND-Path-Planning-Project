@@ -38,21 +38,32 @@ class BehaviorPlanner {
   std::vector<BehaviorState> get_next_possible_states() const {
     std::vector<BehaviorState> next_states{};
     switch (this->ego.get_behavior()) {
+      case STATE_KEEP_LANE:
+      case STATE_KEEP_SPEED:
+        next_states.push_back(STATE_KEEP_SPEED);
       case STATE_CHANGE_LANE_LEFT:
       case STATE_CHANGE_LANE_RIGHT:
         next_states.push_back(STATE_KEEP_LANE);
-        next_states.push_back(STATE_CHANGE_LANE_LEFT);
-        next_states.push_back(STATE_CHANGE_LANE_RIGHT);
-        break;
-      case STATE_KEEP_LANE:
-      case STATE_KEEP_SPEED:
+        // As a lane change does not complete in one time step we need to
+        // push lane change as next step again.
+        if (this->can_change_lane_left()) {
+          next_states.push_back(STATE_CHANGE_LANE_LEFT);
+        }
+        if (this->can_change_lane_right()) {
+          next_states.push_back(STATE_CHANGE_LANE_RIGHT);
+        }
       default:
-        next_states.push_back(STATE_KEEP_LANE);
-        next_states.push_back(STATE_KEEP_SPEED);
-        next_states.push_back(STATE_CHANGE_LANE_LEFT);
-        next_states.push_back(STATE_CHANGE_LANE_RIGHT);
+        break;
     }
     return next_states;
+  }
+
+  bool can_change_lane_left() const {
+    return this->ego.get_lane() - 1 >= 0;
+  }
+
+  bool can_change_lane_right() const {
+    return this->ego.get_lane() + 1 < LANES;
   }
 };
 

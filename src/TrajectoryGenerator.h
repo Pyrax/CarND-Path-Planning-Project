@@ -7,9 +7,11 @@
 
 class TrajectoryGenerator {
  public:
-  TrajectoryGenerator(Vehicle ego, std::vector<Vehicle> others, BehaviorState state) {
+  TrajectoryGenerator(Vehicle ego, vector<Vehicle> others, BehaviorState state) {
     TrajectoryState target_state{};
     TrajectoryJMT jmt{};
+
+    const int direction = (state == STATE_CHANGE_LANE_LEFT) ? -1 : 1; // only use if state is a lane change
 
     switch(state) {
       case STATE_KEEP_LANE:
@@ -17,6 +19,7 @@ class TrajectoryGenerator {
         break;
       case STATE_CHANGE_LANE_LEFT:
       case STATE_CHANGE_LANE_RIGHT:
+        target_state = this->lane_change_trajectory(ego, others, direction);
         break;
       case STATE_PREPARE_CHANGE_LANE_LEFT:
       case STATE_PREPARE_CHANGE_LANE_RIGHT:
@@ -50,13 +53,33 @@ class TrajectoryGenerator {
     };
   }
 
-  TrajectoryState keep_lane_trajectory(Vehicle ego, std::vector<Vehicle> others) const {
+  TrajectoryState keep_lane_trajectory(Vehicle ego, vector<Vehicle> others) const {
+    VehicleState target_long_state = this->get_long_movement(ego, others);
+    double current_d = Vehicle::lane_to_d(ego.get_lane()); // stay in current lane
+
+    return {
+        target_long_state,
+        VehicleState{current_d, 0.0, 0.0}
+    };
+  }
+
+  TrajectoryState lane_change_trajectory(Vehicle ego, vector<Vehicle> others, int direction) {
+    VehicleState target_long_state = this->get_long_movement(ego, others);
+    double target_d = Vehicle::lane_to_d(ego.get_lane() + direction);
+
+    return {
+        target_long_state,
+        VehicleState{target_d, 0.0, 0.0}
+    };
+  }
+
+  VehicleState get_long_movement(Vehicle ego, vector<Vehicle> others) const {
     double t = PLANNING_PERIOD;
     double t2 = t * t;
     double target_dist;
     double target_vel;
     VehicleState current_s = ego.get_state_s();
-    double current_d = Vehicle::lane_to_d(ego.get_lane()); // stay in current lane
+
     double max_new_speed = MAX_SPEED_INC * t * NUM_POINTS / TICK_RATE + current_s.vel;
     Vehicle vehicle_ahead;
     Vehicle vehicle_behind;
@@ -88,10 +111,7 @@ class TrajectoryGenerator {
     // target_dist = current_s.pos + avg_vel * t + 0.5 * avg_acc * t2;
     target_dist = current_s.pos + avg_vel * t;
 
-    return {
-        VehicleState{target_dist, target_vel, 0.0},
-        VehicleState{current_d, 0.0, 0.0}
-    };
+    return {target_dist, target_vel, 0.0};
   }
 };
 
