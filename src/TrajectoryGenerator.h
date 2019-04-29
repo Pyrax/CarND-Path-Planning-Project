@@ -77,7 +77,7 @@ class TrajectoryGenerator {
     double target_vel;
     VehicleState current_s = ego.get_state_s();
 
-    double max_new_speed = MAX_SPEED_INC * t * NUM_POINTS / TICK_RATE + current_s.vel;
+    double max_new_speed = MAX_SPEED_INC * NUM_POINTS + current_s.vel;
     Vehicle vehicle_ahead;
     Vehicle vehicle_behind;
 
