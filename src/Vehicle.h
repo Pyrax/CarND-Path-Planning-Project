@@ -20,7 +20,7 @@ class Vehicle {
   }
 
   double get_position_s() const {
-    return this->s;
+    return fmod(this->s, TRACK_SIZE);
   }
 
   void set_velocity(const double v) {
@@ -41,7 +41,9 @@ class Vehicle {
   }
 
   VehicleState get_state_s() const {
-    return this->state_s;
+    auto state = this->state_s;
+    state.pos = fmod(state.pos, TRACK_SIZE);
+    return state;
   }
 
   VehicleState get_state_d() const {
@@ -61,18 +63,22 @@ class Vehicle {
   }
 
   bool get_vehicle_ahead(vector<Vehicle> vehicles, Vehicle &vehicle_ahead) {
+    return this->get_vehicle_ahead_for_lane(vehicles, vehicle_ahead, this->get_lane());
+  }
+
+  bool get_vehicle_ahead_for_lane(vector<Vehicle> vehicles, Vehicle &vehicle_ahead, int lane) {
     bool found_vehicle = false;
     double min_s = 10000000.0; // to get nearest vehicle
 
     double own_pos = this->get_position_s();
     for (auto &vehicle : vehicles) {
       double pos = vehicle.get_position_s();
-      bool in_same_lane = vehicle.get_lane() == this->get_lane();
+      bool in_lane = vehicle.get_lane() == lane;
       bool is_ahead = pos > own_pos;
       bool nearest = pos < min_s;
       bool in_range = std::fabs(pos - own_pos) <= MAX_FRONT_GAP;
 
-      if (in_same_lane && is_ahead && nearest && in_range) {
+      if (in_lane && is_ahead && nearest && in_range) {
         min_s = pos;
         vehicle_ahead = vehicle;
         found_vehicle = true;
@@ -83,18 +89,22 @@ class Vehicle {
   }
 
   bool get_vehicle_behind(vector<Vehicle> vehicles, Vehicle &vehicle_behind) {
+    return this->get_vehicle_behind_for_lane(vehicles, vehicle_behind, this->get_lane());
+  }
+
+  bool get_vehicle_behind_for_lane(vector<Vehicle> vehicles, Vehicle &vehicle_behind, int lane) {
     bool found_vehicle = false;
     double max_s = -1.0; // to get nearest vehicle
 
     double own_pos = this->get_position_s();
     for (auto &vehicle : vehicles) {
       double pos = vehicle.get_position_s();
-      bool in_same_lane = vehicle.get_lane() == this->get_lane();
+      bool in_lane = vehicle.get_lane() == lane;
       bool is_behind = pos < own_pos;
       bool nearest = pos > max_s;
       bool in_range = std::fabs(pos - own_pos) <= MAX_BACK_GAP;
 
-      if (in_same_lane && is_behind && nearest && in_range) {
+      if (in_lane && is_behind && nearest && in_range) {
         max_s = pos;
         vehicle_behind = vehicle;
         found_vehicle = true;
@@ -119,11 +129,11 @@ class Vehicle {
   static double lane_to_d(int lane) {
     return 2 + 4 * lane;
   }
-
  private:
   VehicleState state_s{}, state_d{};
   BehaviorState behavior = STATE_KEEP_LANE;
   double s = 0.0, d = 0.0, v = 0.0;
+  double target_d = -1.0;
   int lane = 0;
 };
 

@@ -157,9 +157,6 @@ int main() {
           Trajectory traj = planner.get_best_trajectory();
           ego_car.set_behavior(planner.get_next_state());
 
-          /*TrajectoryGenerator generator{ego_car};
-          Trajectory traj = generator.get_trajectory();*/
-
           Path p = motion.generate_path(
               traj.jmt.s,
               traj.jmt.d,

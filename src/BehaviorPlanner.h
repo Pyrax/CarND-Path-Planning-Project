@@ -12,12 +12,30 @@ class BehaviorPlanner {
   }
 
   Trajectory get_best_trajectory() {
-
-    /*for (auto &state : get_next_possible_states()) {
-
-    }*/
-
     BehaviorState s = STATE_KEEP_LANE;
+    double max_new_speed = MAX_SPEED_INC * NUM_POINTS + this->ego.get_velocity();
+    Vehicle vehicle_ahead;
+
+    // Consider changing lane if a vehicle is ahead of us and driving slower.
+    if (this->ego.get_vehicle_ahead(others, vehicle_ahead)) {
+      auto ahead_vel = vehicle_ahead.get_velocity();
+      double vel_threshold = ahead_vel + LANE_CHANGE_VEL_THRESHOLD;
+
+      if (max_new_speed > vel_threshold) {
+        const int left_lane = this->ego.get_lane() - 1;
+        const int right_lane = this->ego.get_lane() + 1;
+        double left_lane_speed = this->left_lane_available() ? this->get_lane_speed(left_lane) : 0.0;
+        double right_lane_speed = this->right_lane_available() ? this->get_lane_speed(right_lane) : 0.0;
+
+        if (left_lane_speed > vel_threshold || right_lane_speed > vel_threshold) {
+          if (right_lane_speed > left_lane_speed) {
+            s = STATE_CHANGE_LANE_RIGHT;
+          } else {
+            s = STATE_CHANGE_LANE_LEFT;
+          }
+        }
+      }
+    }
 
     TrajectoryGenerator gen{this->ego, this->others, s};
     this->next_state = s;
@@ -35,35 +53,29 @@ class BehaviorPlanner {
 
   BehaviorState next_state = STATE_KEEP_LANE;
 
-  std::vector<BehaviorState> get_next_possible_states() const {
-    std::vector<BehaviorState> next_states{};
-    switch (this->ego.get_behavior()) {
-      case STATE_KEEP_LANE:
-      case STATE_KEEP_SPEED:
-        next_states.push_back(STATE_KEEP_SPEED);
-      case STATE_CHANGE_LANE_LEFT:
-      case STATE_CHANGE_LANE_RIGHT:
-        next_states.push_back(STATE_KEEP_LANE);
-        // As a lane change does not complete in one time step we need to
-        // push lane change as next step again.
-        if (this->can_change_lane_left()) {
-          next_states.push_back(STATE_CHANGE_LANE_LEFT);
-        }
-        if (this->can_change_lane_right()) {
-          next_states.push_back(STATE_CHANGE_LANE_RIGHT);
-        }
-      default:
-        break;
-    }
-    return next_states;
-  }
-
-  bool can_change_lane_left() const {
+  bool left_lane_available() const {
     return this->ego.get_lane() - 1 >= 0;
   }
 
-  bool can_change_lane_right() const {
+  bool right_lane_available() const {
     return this->ego.get_lane() + 1 < LANES;
+  }
+
+  double get_lane_speed(int lane) {
+    double lane_speed = 0.0;
+    Vehicle vehicle_ahead;
+    Vehicle vehicle_behind;
+
+    if (!this->ego.get_vehicle_behind_for_lane(others, vehicle_behind, lane)) {
+      if (this->ego.get_vehicle_ahead_for_lane(others, vehicle_ahead, lane)) {
+        if (vehicle_ahead.get_position_s() > this->ego.get_position_s() + MIN_FRONT_GAP) {
+          lane_speed = vehicle_ahead.get_velocity();
+        }
+      } else {
+        lane_speed = MAX_SPEED;
+      }
+    }
+    return lane_speed;
   }
 };
 
