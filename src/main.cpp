@@ -135,7 +135,6 @@ int main() {
           }
 
           int prev_size = previous_path_x.size();
-          int prev_reuse = min(REUSE_POINTS, prev_size); // how many points to reuse from last generated trajectory
 
           if (initialize) {
             VehicleState init_s{car_s, car_speed, 0.0};
@@ -146,8 +145,7 @@ int main() {
 
             initialize = false;
           } else {
-            // int cur = NUM_POINTS - prev_size + prev_reuse - 1;
-            int cur = NUM_POINTS - prev_size + prev_reuse;
+            int cur = NUM_POINTS - prev_size;
             ego_car.set_state_s(prev_path_frenet.s[cur]);
             ego_car.set_state_d(prev_path_frenet.d[cur]);
           }
@@ -161,8 +159,7 @@ int main() {
               traj.jmt.s,
               traj.jmt.d,
               prev_path_frenet,
-              prev_path_xy,
-              prev_reuse);
+              prev_path_xy);
 
           prev_path_frenet = p.frenet_coords;
 

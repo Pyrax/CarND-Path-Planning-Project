@@ -14,7 +14,6 @@ const double MAX_LANE = 12.0;
 const double TICK_RATE = 0.02;
 const double PLANNING_PERIOD = 2.0;
 const int NUM_POINTS = 50;
-const int REUSE_POINTS = 10;
 
 const double MAX_SPEED = 21.0;
 const double MAX_ACCEL = 10.0;
@@ -23,7 +22,7 @@ const double MAX_JERK = 10.0;
 const double MS_TO_MPH = 2.24; // factor to convert from meters per second to miles per hour
 
 const double VEL_TOLERANCE = 0.1; // small tolerance to substract from other vehicles velocity
-const double LANE_CHANGE_VEL_THRESHOLD = 4.0;
+const double LANE_CHANGE_VEL_THRESHOLD = 2.0;
 
 const double MIN_FRONT_GAP = 20.0; // important for keeping a minimum distance when generating trajectories
 const double MIN_BACK_GAP = 8.0; // needs to be considered when changing lanes for example

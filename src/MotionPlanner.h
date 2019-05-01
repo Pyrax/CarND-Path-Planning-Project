@@ -15,7 +15,7 @@ class MotionPlanner {
     this->spline_dy.set_points(map.s, map.dy);
   }
 
-  Path generate_path(const JMT &jmt_s, const JMT &jmt_d, const FrenetPath &prev_path_frenet, Coords prev_path_xy, const int prev_reuse) const {
+  Path generate_path(const JMT &jmt_s, const JMT &jmt_d, const FrenetPath &prev_path_frenet, Coords prev_path_xy) const {
     std::vector<double> x_pts{};
     std::vector<double> y_pts{};
     std::vector<VehicleState> path_s{};
@@ -26,15 +26,7 @@ class MotionPlanner {
     path_s.reserve(static_cast<unsigned long>(NUM_POINTS));
     path_d.reserve(static_cast<unsigned long>(NUM_POINTS));
 
-    for (int i = 0; i < prev_reuse; ++i) {
-      x_pts.push_back(prev_path_xy.get_x()[i]);
-      y_pts.push_back(prev_path_xy.get_y()[i]);
-
-      path_s.push_back(prev_path_frenet.s[i]);
-      path_d.push_back(prev_path_frenet.d[i]);
-    }
-
-    for (int i = 0; i < NUM_POINTS - prev_reuse; ++i) {
+    for (int i = 0; i < NUM_POINTS; ++i) {
       const double s      = jmt_s.solve(i * TICK_RATE);
       const double s_dot  = jmt_s.solve_dot(i * TICK_RATE);
       const double s_ddot = jmt_s.solve_ddot(i * TICK_RATE);

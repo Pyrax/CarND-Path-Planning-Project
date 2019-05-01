@@ -20,7 +20,7 @@ class Vehicle {
   }
 
   double get_position_s() const {
-    return fmod(this->s, TRACK_SIZE);
+    return this->s;
   }
 
   void set_velocity(const double v) {
@@ -41,9 +41,7 @@ class Vehicle {
   }
 
   VehicleState get_state_s() const {
-    auto state = this->state_s;
-    state.pos = fmod(state.pos, TRACK_SIZE);
-    return state;
+    return this->state_s;
   }
 
   VehicleState get_state_d() const {
