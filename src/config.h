@@ -18,7 +18,6 @@ const int NUM_POINTS = 50;
 const double MAX_SPEED = 21.0;
 const double MAX_ACCEL = 10.0;
 const double MAX_SPEED_INC = MAX_ACCEL * TICK_RATE;
-const double MAX_JERK = 10.0;
 const double MS_TO_MPH = 2.24; // factor to convert from meters per second to miles per hour
 
 const double VEL_TOLERANCE = 0.1; // small tolerance to substract from other vehicles velocity
