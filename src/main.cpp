@@ -20,6 +20,8 @@ using nlohmann::json;
 using std::string;
 using std::vector;
 using std::min;
+using std::cout;
+using std::endl;
 
 int main() {
   uWS::Hub h;
@@ -33,8 +35,6 @@ int main() {
 
   // Waypoint map to read from
   string map_file_ = "../data/highway_map.csv";
-  // The max s value before wrapping around the track back to 0
-  double max_s = 6945.554;
 
   std::ifstream in_map_(map_file_.c_str(), std::ifstream::in);
 
@@ -57,6 +57,13 @@ int main() {
     map_waypoints_dx.push_back(d_x);
     map_waypoints_dy.push_back(d_y);
   }
+
+  // Add first waypoint again to close the loop:
+  map_waypoints_x.push_back(map_waypoints_x[0]);
+  map_waypoints_y.push_back(map_waypoints_y[0]);
+  map_waypoints_s.push_back(TRACK_SIZE);
+  map_waypoints_dx.push_back(map_waypoints_dx[0]);
+  map_waypoints_dy.push_back(map_waypoints_dy[1]);
 
   // Initialize ego car
   Vehicle ego_car{};
@@ -148,6 +155,12 @@ int main() {
             int cur = NUM_POINTS - prev_size;
             ego_car.set_state_s(prev_path_frenet.s[cur]);
             ego_car.set_state_d(prev_path_frenet.d[cur]);
+
+            /*auto cs = ego_car.get_state_s();
+            auto cd = ego_car.get_state_d();
+            cout  << "-----" << endl
+                  << "STATE_S=" << "{" <<  cs.pos << "," << cs.vel << "," << cs.acc << "}" << endl
+                  << "STATE_D=" << "{" <<  cd.pos << "," << cd.vel << "," << cd.acc << "}" << endl;*/
           }
 
           // Get best possible trajectory through our behavior planner

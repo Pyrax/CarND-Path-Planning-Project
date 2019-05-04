@@ -9,12 +9,12 @@ class Vehicle {
   Vehicle() = default;
 
   Vehicle(const double s, const double d, const double v)
-      : s(s), d(d), v(v), lane(Vehicle::d_to_lane(d)) {
+      : s(fmod(s, TRACK_SIZE)), d(d), v(v), lane(Vehicle::d_to_lane(d)) {
 
   }
 
   void set_position(const double s, const double d) {
-    this->s = s;
+    this->s = fmod(s, TRACK_SIZE);
     this->d = d;
     this->lane = Vehicle::d_to_lane(d);
   }
