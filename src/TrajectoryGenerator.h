@@ -103,9 +103,7 @@ class TrajectoryGenerator {
       target_vel = std::min(max_new_speed, MAX_SPEED);
     }
 
-    const double avg_vel = (target_vel + current_s.vel) / t;
-    // const double avg_acc = (target_vel - current_s.vel) / t;
-    // target_dist = current_s.pos + avg_vel * t + 0.5 * avg_acc * t2;
+    const double avg_vel = std::min((target_vel + current_s.vel) / t, MAX_SPEED);
     target_dist = current_s.pos + avg_vel * t;
 
     return {target_dist, target_vel, 0.0};
