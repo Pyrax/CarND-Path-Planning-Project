@@ -99,7 +99,7 @@ class TrajectoryGenerator {
             ahead_vel -
             current_s.acc * t;
 
-        target_vel = std::min(std::min(max_velocity_in_front, max_new_speed), MAX_SPEED);
+        target_vel = std::min(std::min(max_velocity_in_front - VEL_TOLERANCE, max_new_speed), MAX_SPEED);
       }
     } else {
       target_vel = std::min(max_new_speed, MAX_SPEED);

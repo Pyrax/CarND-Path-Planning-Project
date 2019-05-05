@@ -15,12 +15,12 @@ const double TICK_RATE = 0.02;
 const double PLANNING_PERIOD = 2.0;
 const int NUM_POINTS = 50;
 
-const double MAX_SPEED = 21.0;
+const double MAX_SPEED = 20.5;
 const double MAX_ACCEL = 10.0;
 const double MAX_SPEED_INC = MAX_ACCEL * TICK_RATE;
 const double MS_TO_MPH = 2.24; // factor to convert from meters per second to miles per hour
 
-const double VEL_TOLERANCE = 0.1; // small tolerance to substract from other vehicles velocity
+const double VEL_TOLERANCE = 0.2; // small tolerance to substract from other vehicles velocity
 const double LANE_CHANGE_VEL_THRESHOLD = 2.0;
 
 const double FRONT_FOV = 60.0;
