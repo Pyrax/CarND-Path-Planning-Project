@@ -66,8 +66,8 @@ class BehaviorPlanner {
     Vehicle vehicle_ahead;
     Vehicle vehicle_behind;
 
-    if (!this->ego.get_vehicle_behind_for_lane(others, vehicle_behind, lane, BACK_BUFFER_CHANGE)) {
-      if (this->ego.get_vehicle_ahead_for_lane(others, vehicle_ahead, lane, FRONT_FOV_CHANGE)) {
+    if (!this->ego.get_vehicle_behind_for_lane(this->others, vehicle_behind, lane, BACK_BUFFER_CHANGE)) {
+      if (this->ego.get_vehicle_ahead_for_lane(this->others, vehicle_ahead, lane, FRONT_FOV_CHANGE)) {
         if (vehicle_ahead.get_position_s() > this->ego.get_position_s() + FRONT_BUFFER_CHANGE) {
           lane_speed = vehicle_ahead.get_velocity();
         }
