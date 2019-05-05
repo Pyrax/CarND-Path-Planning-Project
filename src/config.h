@@ -23,10 +23,12 @@ const double MS_TO_MPH = 2.24; // factor to convert from meters per second to mi
 const double VEL_TOLERANCE = 0.1; // small tolerance to substract from other vehicles velocity
 const double LANE_CHANGE_VEL_THRESHOLD = 2.0;
 
-const double MIN_FRONT_GAP = 20.0; // important for keeping a minimum distance when generating trajectories
-const double MIN_BACK_GAP = 8.0; // needs to be considered when changing lanes for example
-const double MAX_FRONT_GAP = 60.0; // vehicles which are further away are not considered to be in front
-const double MAX_BACK_GAP = 10.0; // vehicles which are further away are not considered to be behind
+const double FRONT_FOV = 60.0;
+const double FRONT_FOV_CHANGE = 100.0;
+const double FRONT_BUFFER = 30.0;
+const double FRONT_BUFFER_CHANGE = 15.0;
+const double BACK_BUFFER = 10.0;
+const double BACK_BUFFER_CHANGE = 15.0;
 
 enum BehaviorState {
   STATE_KEEP_SPEED,

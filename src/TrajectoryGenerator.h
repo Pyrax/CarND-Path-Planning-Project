@@ -51,8 +51,8 @@ class TrajectoryGenerator {
   }
 
   TrajectoryState keep_lane_trajectory(Vehicle ego, vector<Vehicle> others) const {
-    VehicleState target_long_state = this->get_long_movement(ego, others);
     double current_d = Vehicle::lane_to_d(ego.get_lane()); // stay in current lane
+    VehicleState target_long_state = this->get_long_movement(ego, others, ego.get_lane());
 
     return {
         target_long_state,
@@ -61,8 +61,8 @@ class TrajectoryGenerator {
   }
 
   TrajectoryState lane_change_trajectory(Vehicle ego, vector<Vehicle> others, int direction) {
-    VehicleState target_long_state = this->get_long_movement(ego, others);
     double target_d = Vehicle::lane_to_d(ego.get_lane() + direction);
+    VehicleState target_long_state = this->get_long_movement(ego, others, ego.get_lane() + direction);
 
     return {
         target_long_state,
@@ -70,7 +70,7 @@ class TrajectoryGenerator {
     };
   }
 
-  VehicleState get_long_movement(Vehicle ego, vector<Vehicle> others) const {
+  VehicleState get_long_movement(Vehicle ego, vector<Vehicle> others, int target_lane) const {
     double t = PLANNING_PERIOD;
     double t2 = t * t;
     double target_dist;
@@ -81,16 +81,18 @@ class TrajectoryGenerator {
     Vehicle vehicle_ahead;
     Vehicle vehicle_behind;
 
-    if (ego.get_vehicle_ahead(others, vehicle_ahead)) {
+    if (ego.get_vehicle_ahead_for_lane(others, vehicle_ahead, target_lane, FRONT_FOV)) {
       auto ahead_vel = vehicle_ahead.get_velocity();
       auto ahead_pos = vehicle_ahead.get_position_s();
 
-      if (ego.get_vehicle_behind(others, vehicle_behind)) {
+      if (ego.get_vehicle_behind_for_lane(others, vehicle_behind, target_lane, BACK_BUFFER)) {
+        // if vehicle behind comes to close we just keep the speed of the vehicle ahead
         target_vel = ahead_vel - VEL_TOLERANCE;
       } else {
+        // otherwise we try to get as close to the vehicle ahead as possible
         double pos_diff = std::fabs(ahead_pos - current_s.pos);
         double vel_diff = std::fabs(ahead_vel - current_s.vel);
-        double distance_to_close = pos_diff - MIN_FRONT_GAP;
+        double distance_to_close = pos_diff - FRONT_BUFFER;
 
         double max_velocity_in_front =
             distance_to_close / t +

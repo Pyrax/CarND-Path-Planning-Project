@@ -17,7 +17,7 @@ class BehaviorPlanner {
     Vehicle vehicle_ahead;
 
     // Consider changing lane if a vehicle is ahead of us and driving slower.
-    if (this->ego.get_vehicle_ahead(others, vehicle_ahead)) {
+    if (this->ego.get_vehicle_ahead(others, vehicle_ahead, FRONT_FOV_CHANGE)) {
       auto ahead_vel = vehicle_ahead.get_velocity();
       double vel_threshold = ahead_vel + LANE_CHANGE_VEL_THRESHOLD;
 
@@ -66,9 +66,9 @@ class BehaviorPlanner {
     Vehicle vehicle_ahead;
     Vehicle vehicle_behind;
 
-    if (!this->ego.get_vehicle_behind_for_lane(others, vehicle_behind, lane)) {
-      if (this->ego.get_vehicle_ahead_for_lane(others, vehicle_ahead, lane)) {
-        if (vehicle_ahead.get_position_s() > this->ego.get_position_s() + MIN_FRONT_GAP) {
+    if (!this->ego.get_vehicle_behind_for_lane(others, vehicle_behind, lane, BACK_BUFFER_CHANGE)) {
+      if (this->ego.get_vehicle_ahead_for_lane(others, vehicle_ahead, lane, FRONT_FOV)) {
+        if (vehicle_ahead.get_position_s() > this->ego.get_position_s() + FRONT_BUFFER_CHANGE) {
           lane_speed = vehicle_ahead.get_velocity();
         }
       } else {
