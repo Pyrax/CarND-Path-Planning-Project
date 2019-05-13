@@ -12,6 +12,7 @@ class BehaviorPlanner {
   }
 
   Trajectory get_best_trajectory() {
+    // By default, keep lane.
     BehaviorState s = STATE_KEEP_LANE;
     double max_new_speed = MAX_SPEED_INC * NUM_POINTS + this->ego.get_velocity();
     Vehicle vehicle_ahead;
