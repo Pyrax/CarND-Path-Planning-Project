@@ -35,6 +35,13 @@ Different trajectories are generated for different desired behaviors. The Trajec
 #### Motion planner
 Transitioning the generated trajectories into an actual path is realized through the motion planner. It takes the polynomial functions and solves them for a given time T to get the frenet coordinates. These frenet values are then converted to cartesian coordinates which can be used by the simulator. In order to create smooth paths, the conversion into XY-coordinates is realized through spline interpolation with a [cubic spline interpolation library](https://kluge.in-chemnitz.de/opensource/spline/).
 
+#### Further work
+In the following, I describe some possible improvements which can still be deployed for my current approach when I will revisit this project in the future.
+
+To further improve trajectories a behavior planner which also includes states for preparing lane changes could be developed as well as cost functions to select between different trajectories (see behavior planner section).
+
+Furthermore, trajectories of other vehicles could be predicted with statistics or machine learning to make better decisions for our own car.
+
 ---
 
 ## Project instructions
