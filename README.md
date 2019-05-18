@@ -19,8 +19,21 @@ The program fulfills the following specifications:
 
 ### Model Documentation
 
+Path generation is split into three different parts:
+1. First, a behavior planner (`BehaviorPlanner.h`) determines which trajectory the vehicle should take next. Therefore, it considers the current positions and velocities of the ego car and all other cars. From this information it chooses the next desired state. 
+2. Then, a trajectory is generated using jerk minimizing trajectories which fits to the desired state (`TrajectoryGenerator.h`).
+3. In the end, a motion planner calculates the real coordinates from the generated trajectories transforming vehicle states into an actual path (`MotionPlanner.h`).
 
+#### Behavior Planner
+The Behavior Planner decides which target trajectory and state should be taken. Currently, it only considers the positions and velocities of other vehicles and the ego car. So, a simple deterministic approach is taken where 3 states are available which include `STATE_KEEP_LANE`, `STATE_CHANGE_LANE_LEFT` and `STATE_CHANGE_LANE_RIGHT`. The Behavior Planner is also responsible for realizing safe lane changes without collisions.
+Ideally, it could also incorporate predictions of other vehicles trajectories and use cost functions to find the most suitable trajectory. However, due to time constraints I sticked to the simple approach which is sufficient for the given task.
+Also, the current Behavior Planner only changes one lane at a time. This means going from far left to the far right consists of multiple single lane changes. This could be optimized to support multiple lane changes through a single trajectory.
 
+#### Trajectory generator
+Different trajectories are generated for different desired behaviors. The Trajectory Generator translates the current and the target state of a vehicle into a polynomial function which can be solved for time to get a set of points. It uses jerk minimized trajectories to describe the path and to take limits into account. Therefore, it follows the constraints of maximum speed, acceleration and jerk.
+
+#### Motion planner
+Transitioning the generated trajectories into an actual path is realized through the motion planner. It takes the polynomial functions and solves them for a given time T to get the frenet coordinates. These frenet values are then converted to cartesian coordinates which can be used by the simulator. In order to create smooth paths, the conversion into XY-coordinates is realized through spline interpolation with a [cubic spline interpolation library](https://kluge.in-chemnitz.de/opensource/spline/).
 
 ---
 
